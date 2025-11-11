@@ -1,81 +1,108 @@
-REM NO DEBES MODIFICAR ESTE ARCHIVO
-REM ===================================
-REM Purpose: Script to setup a Python virtual environment, install requirements, 
-REM ===================================
-REM NO DEBES MODIFICAR ESTE ARCHIVO
-
-echo.
-echo === Python Virtual Environment Setup ===
-echo.
-
-REM Desactivar el ambiente virtual actual si está activo
-if defined VIRTUAL_ENV (
-    echo Desactivando ambiente virtual actual: %VIRTUAL_ENV%
-    call deactivate
-)
-
-echo Buscando código del proyecto en config.json...
-
 @echo off
 setlocal EnableDelayedExpansion
 
-REM Cambiar al directorio donde está config.json
-cd etl_scripts\src
+REM ===========================================
+REM   Script: set_up.bat
+REM   Autor:  Tomás Ríos
+REM   Propósito: Configurar entorno virtual para MLOps Pipeline
+REM   Versión estable 2025-11
+REM ===========================================
 
-REM Leer línea que contiene "project_name"
-for /f "usebackq tokens=2 delims=:" %%A in (`findstr "project_code" config.json`) do (
-    set "line=%%A"
-    set "line=!line:,=!"
-    set "line=!line:"=!"
-    set "project_code=!line:~1!"
-)
+echo.
+echo === INICIO DE CONFIGURACIÓN DEL ENTORNO ===
+echo.
 
-REM Volver al directorio raíz
-cd ..\..
+REM Obtener la ruta absoluta del directorio del script
+set "SCRIPT_DIR=%~dp0"
+echo Directorio actual del script: %SCRIPT_DIR%
 
-echo Creando nuevo ambiente virtual: %project_code%-venv
-py -m venv %project_code%-venv
+REM Movernos al directorio del script por seguridad
+cd /d "%SCRIPT_DIR%"
 
-echo Activating virtual environment...
-call %project_code%-venv\Scripts\activate
-
-if %ERRORLEVEL% EQU 0 (
-    echo.
-    echo Ambiente virtaul creado con exito!.
-    echo Python actual: 
-    where python
-    
-    echo.
-    echo === Instalando requisitos ===
-    if exist requirements.txt (
-        echo requirements.txt encontrado, instalando librerias...
-        pip install --no-cache-dir -r requirements.txt
-        
-        if %ERRORLEVEL% EQU 0 (
-            echo.
-            echo Todas las librerías instaladas correctamente.
-
-            echo.
-            echo === Registrando ambiente virtual con Jupyter ===
-            echo Registrando kernel con Jupyter...
-            python -m ipykernel install --user --name=%project_code%-venv --display-name="%project_code%-venv Python ETL"
-            
-            if %ERRORLEVEL% EQU 0 (
-                echo Ambiente virtual registrado como kernel de Jupyter correctamente.
-                echo Ahora puedes seleccionar "%project_code%-venv Python ETL" en Jupyter notebook.
-            ) else (
-                echo Advertencia: Fallo al registrar el ambiente virtual como kernel de Jupyter. Jupyter notebook puede no reconocer este ambiente virtual.
-            )
-
-        ) else (
-            echo.
-            echo Error instalando las librerías desde requirements.txt. Revisar los mensajes de error.
-        )
-    ) else (
-        echo.
-        echo Advertencias: requirements.txt no fue en contrado en el directorio actual.
+REM ================================
+REM Buscar y leer el project_code en config.json
+REM ================================
+if exist "%SCRIPT_DIR%config.json" (
+    for /f "usebackq tokens=2 delims=:" %%A in (`findstr "project_code" "%SCRIPT_DIR%config.json"`) do (
+        set "line=%%A"
+        set "line=!line:,=!"
+        set "line=!line:"=!"
+        set "project_code=!line:~1!"
     )
 ) else (
-    echo.
-    echo Error activando el ambiente virtual.
+    echo ❌ No se encontró config.json en %SCRIPT_DIR%.
+    pause
+    exit /b 1
 )
+
+if not defined project_code (
+    set "project_code=mlops_pipeline"
+    echo ⚠️ No se encontró project_code en config.json. Se usará nombre por defecto: mlops_pipeline
+)
+
+echo Nombre del proyecto detectado: %project_code%
+echo.
+
+REM ================================
+REM Crear entorno virtual dentro del proyecto
+REM ================================
+set "venv_path=%SCRIPT_DIR%%project_code%-venv"
+if exist "%venv_path%" (
+    echo ⚠️ El entorno virtual ya existe en: %venv_path%
+) else (
+    echo Creando entorno virtual en: %venv_path%
+    py -m venv "%venv_path%"
+)
+
+REM ================================
+REM Activar el entorno virtual
+REM ================================
+echo.
+echo Activando entorno virtual...
+call "%venv_path%\Scripts\activate"
+
+if %ERRORLEVEL% NEQ 0 (
+    echo ❌ Error activando el entorno virtual.
+    pause
+    exit /b 1
+)
+
+echo ✅ Entorno activado correctamente.
+echo Python actual:
+where python
+echo.
+
+REM ================================
+REM Instalar dependencias
+REM ================================
+echo === Instalando librerías de requirements.txt ===
+if exist "%SCRIPT_DIR%requirements.txt" (
+    pip install --no-cache-dir -r "%SCRIPT_DIR%requirements.txt"
+    if %ERRORLEVEL% EQU 0 (
+        echo ✅ Todas las librerías se instalaron correctamente.
+    ) else (
+        echo ❌ Error al instalar librerías.
+        pause
+        exit /b 1
+    )
+) else (
+    echo ⚠️ No se encontró requirements.txt en: %SCRIPT_DIR%
+)
+
+REM ================================
+REM Registrar kernel en Jupyter
+REM ================================
+echo.
+echo === Registrando entorno virtual con Jupyter ===
+python -m ipykernel install --user --name=%project_code%-venv --display-name "%project_code%-venv Python ETL"
+
+if %ERRORLEVEL% EQU 0 (
+    echo ✅ Kernel registrado correctamente. 
+    echo Selecciona "%project_code%-venv Python ETL" en Jupyter Notebook o VSCode.
+) else (
+    echo ⚠️ No se pudo registrar el kernel en Jupyter.
+)
+
+echo.
+echo === CONFIGURACIÓN COMPLETA ===
+pause

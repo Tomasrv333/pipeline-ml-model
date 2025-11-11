@@ -1,0 +1,6 @@
+{
+  "project_code": "mlops_pipeline",
+  "api_url": "http://localhost:8000/predict",
+  "data_path": "./data/",
+  "author": "Tomas Rios"
+}

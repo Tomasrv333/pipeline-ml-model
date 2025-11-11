@@ -1,0 +1,4 @@
+Modelo,Accuracy (Train),Accuracy (Test),F1 (Train),F1 (Test),CV Mean,CV Std
+LogisticRegression,0.898,0.938,0.884,0.928,0.896,0.021
+RandomForest,0.949,0.963,0.944,0.958,0.941,0.012
+XGBoost,0.994,0.98,0.993,0.977,0.973,0.007

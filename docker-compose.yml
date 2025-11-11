@@ -1,0 +1,28 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: mlops_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./mlops_pipeline/src:/app/src
+      - ./mlops_pipeline/data:/app/data
+      - ./config.json:/app/config.json
+    restart: always
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: mlops_dashboard
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    volumes:
+      - ./mlops_pipeline/src:/app/src
+      - ./mlops_pipeline/data:/app/data
+      - ./config.json:/app/config.json
+    restart: always
