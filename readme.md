@@ -2,7 +2,7 @@
 # 🧠 MLOps Pipeline — Proyecto Final de Machine Learning
 
 Este proyecto implementa una **pipeline completa de Machine Learning bajo principios MLOps**, abarcando desde la **carga y exploración de datos** hasta el **entrenamiento, evaluación, despliegue y monitoreo** de los modelos.  
-El desarrollo forma parte del **Proyecto Final de la asignatura Machine Learning** de la **Universidad CEIPA** (2025).
+El desarrollo forma parte del **Proyecto Final de la asignatura Machine Learning** de la **Luis Amigo** (2025).
 
 ---
 
